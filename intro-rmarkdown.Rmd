@@ -1,0 +1,28 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readr)
+```
+
+
+# Introduction
+
+- read in data
+
+```{r}
+bg_chem <- read_csv("data/BGchem2008data.csv", show_col_types = FALSE)
+
+```
+
+# Analysis
+
+- calculate summary statistics
+- calculate mean redfield ratio
+- plot redfield ratio 
