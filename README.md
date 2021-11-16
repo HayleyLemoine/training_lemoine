@@ -1,3 +1,5 @@
 # training_lemoine
 
-Scott was here.s
+Scott was here.
+
+That's nice.
