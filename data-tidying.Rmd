@@ -26,6 +26,27 @@ catch_original <- read_csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/d
 
 Drop notes and all column
 ```{r}
+catch_data <- catch_original %>% 
+  select(Region, Year, Chinook, Sockeye, Coho, Pink, Chum)
+ 
+
+catch_clean <- catch_data %>% 
+  mutate(Chinook = if_else(Chinook == "I", "1", Chinook)) %>% 
+  mutate(Chinook = as.integer(Chinook))
+
+
+catch_long <- catch_clean %>% 
+  pivot_longer(cols = -c(Region, Year), names_to = "species", values_to = "catch")%>% 
+  rename(catch_thousands = catch) %>% 
+  mutate(catch = catch_thousands * 1000)%>% 
+  select(-catch_thousands)
+
+
+mean_region <- catch_long %>% 
+  group_by(Region) %>%
+  summarise(catch_mean = mean(catch))
+
+
 catch_original %>% 
   group_by(Year) %>% 
   summarise(n = n())
@@ -33,7 +54,17 @@ catch_original %>%
 ```
 
 
-
 # Join to regions dataset
 
+```{r}
+region_defs <- read_csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.303.1") %>% 
+  select(code, mgmtArea)
+
+```
+
+```{r}
+
+catch_joined <- left_join(catch_long, region_defs, by = c("Region" = "code"))
+
+```
 
