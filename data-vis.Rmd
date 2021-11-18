@@ -53,4 +53,18 @@ ggplot(annual_esc, mapping = aes(x = Species, y = escapement)) +
 
 ```
 
+# Leaflet maps
+
+```{r}
+
+locs <- esc %>% 
+  distinct(Location, Latitude, Longitude) %>% 
+  drop_na()
+```
+
+```{r}
+leaflet(locs) %>% 
+  addTiles() %>%  # adds a basemap
+  addMarkers(lng = ~Longitude, lat = ~Latitude, popup = ~Location)
+```
 
