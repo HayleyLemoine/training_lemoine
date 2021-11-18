@@ -179,7 +179,28 @@ library(readr)</code></pre>
 <div id="clean-and-reshape-data" class="section level1">
 <h1>Clean and reshape data</h1>
 <p>Drop notes and all column</p>
-<pre class="r"><code>catch_original %&gt;% 
+<pre class="r"><code>catch_data &lt;- catch_original %&gt;% 
+  select(Region, Year, Chinook, Sockeye, Coho, Pink, Chum)
+ 
+
+catch_clean &lt;- catch_data %&gt;% 
+  mutate(Chinook = if_else(Chinook == &quot;I&quot;, &quot;1&quot;, Chinook)) %&gt;% 
+  mutate(Chinook = as.integer(Chinook))
+
+
+catch_long &lt;- catch_clean %&gt;% 
+  pivot_longer(cols = -c(Region, Year), names_to = &quot;species&quot;, values_to = &quot;catch&quot;)%&gt;% 
+  rename(catch_thousands = catch) %&gt;% 
+  mutate(catch = catch_thousands * 1000)%&gt;% 
+  select(-catch_thousands)
+
+
+mean_region &lt;- catch_long %&gt;% 
+  group_by(Region) %&gt;%
+  summarise(catch_mean = mean(catch))
+
+
+catch_original %&gt;% 
   group_by(Year) %&gt;% 
   summarise(n = n())</code></pre>
 <pre><code>## # A tibble: 120 × 2
@@ -199,6 +220,17 @@ library(readr)</code></pre>
 </div>
 <div id="join-to-regions-dataset" class="section level1">
 <h1>Join to regions dataset</h1>
+<pre class="r"><code>region_defs &lt;- read_csv(&quot;https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.303.1&quot;) %&gt;% 
+  select(code, mgmtArea)</code></pre>
+<pre><code>## Rows: 20 Columns: 5</code></pre>
+<pre><code>## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (4): code, mgmtArea, areaClass, notes
+## dbl (1): regionCode</code></pre>
+<pre><code>## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>catch_joined &lt;- left_join(catch_long, region_defs, by = c(&quot;Region&quot; = &quot;code&quot;))</code></pre>
 </div>
 
 
