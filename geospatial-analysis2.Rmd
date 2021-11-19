@@ -1,0 +1,80 @@
+---
+title: "Geospatial Analysis"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message = FALSE}
+library(sf)
+library(dplyr)
+library(ggplot2)
+library(leaflet)
+library(scales)
+library(ggmap)
+```
+
+```{r}
+ak_regions <- read_sf("shapefiles/ak_regions_simp.shp")
+
+plot(ak_regions)  
+
+st_crs(ak_regions)
+```
+
+```{r}
+ak_regions_338 <- ak_regions %>%
+  st_transform(crs=3338) #transform object from one coord sys to another
+
+plot(ak_regions_338)
+```
+
+```{r}
+ak_regions_338 %>%
+  select(region)
+  
+```
+
+# Join city data to regions
+
+```{r}
+pop <- read.csv("shapefiles/alaska_population.csv")
+```
+
+```{r}
+pop_4326 <- st_as_sf(pop, 
+                     coords = c('lng','lat'),
+                     crs = 4326)
+# st_as_sf 
+head(pop_4326)
+
+pop_3338 <- pop_4326 %>%
+  st_transform(crs = 3338)
+```
+
+```{r}
+pop_joined <- st_join(pop_3338, ak_regions_338, join = st_within)
+
+head(pop_joined)
+
+plot(pop_joined)
+```
+
+```{r}
+pop_region <- pop_joined %>%
+  as.data.frame()%>%
+  group_by(region) %>%
+  summarise(total_pop = sum(population))
+
+pop_region_3338 <- left_join(ak_regions_338, pop_region)
+
+plot(pop_region_3338)
+```
+
+
+
+
